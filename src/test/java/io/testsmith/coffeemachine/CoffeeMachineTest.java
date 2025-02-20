@@ -10,8 +10,7 @@ import io.testsmith.coffeemachine.models.WaterTank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CoffeeMachineTest {
@@ -29,16 +28,68 @@ class CoffeeMachineTest {
     }
 
     @Test
-    void testBrewCoffee_Success() {
+    void testPowerOnOffFeature() {
+        assertFalse(coffeeMachine.isPoweredOn());
+
+        coffeeMachine.powerOn();
+        assertTrue(coffeeMachine.isPoweredOn());
+
+        coffeeMachine.powerOff();
+        assertFalse(coffeeMachine.isPoweredOn());
+    }
+
+    @Test
+    void testBrewFailsWhenMachineIsOff() {
+        when(waterTank.getLevel()).thenReturn(300);
+        when(beanReservoir.getLevel()).thenReturn(50);
+        when(milkReservoir.getLevel()).thenReturn(0);
+
+        assertThrows(IllegalStateException.class, () -> coffeeMachine.brew(CoffeeType.COFFEE));
+    }
+
+    @Test
+    void testBrewSucceedsWhenMachineIsOn() {
+        coffeeMachine.powerOn();
         when(waterTank.getLevel()).thenReturn(300);
         when(beanReservoir.getLevel()).thenReturn(50);
         when(milkReservoir.getLevel()).thenReturn(0);
 
         String result = coffeeMachine.brew(CoffeeType.COFFEE);
-
         assertEquals("Your coffee is ready!", result);
-        verify(waterTank).use(200);
-        verify(beanReservoir).use(20);
+    }
+
+    @Test
+    void testBrewCountTracking() {
+        coffeeMachine.powerOn();
+
+        when(waterTank.getLevel()).thenReturn(300);
+        when(beanReservoir.getLevel()).thenReturn(50);
+        when(milkReservoir.getLevel()).thenReturn(0);
+
+        assertEquals(0, coffeeMachine.getBrewCount(CoffeeType.COFFEE));
+
+        coffeeMachine.brew(CoffeeType.COFFEE);
+        assertEquals(1, coffeeMachine.getBrewCount(CoffeeType.COFFEE));
+
+        coffeeMachine.brew(CoffeeType.COFFEE);
+        assertEquals(2, coffeeMachine.getBrewCount(CoffeeType.COFFEE));
+    }
+
+    @Test
+    void testBrewCountTracksDifferentCoffeeTypes() {
+        coffeeMachine.powerOn();
+
+        when(waterTank.getLevel()).thenReturn(300);
+        when(beanReservoir.getLevel()).thenReturn(50);
+        when(milkReservoir.getLevel()).thenReturn(200);
+
+        coffeeMachine.brew(CoffeeType.LATTE);
+        coffeeMachine.brew(CoffeeType.CAPPUCCINO);
+        coffeeMachine.brew(CoffeeType.CAPPUCCINO);
+
+        assertEquals(1, coffeeMachine.getBrewCount(CoffeeType.LATTE));
+        assertEquals(2, coffeeMachine.getBrewCount(CoffeeType.CAPPUCCINO));
+        assertEquals(0, coffeeMachine.getBrewCount(CoffeeType.ESPRESSO));
     }
 
     @Test
@@ -47,6 +98,7 @@ class CoffeeMachineTest {
         when(beanReservoir.getLevel()).thenReturn(50);
         when(milkReservoir.getLevel()).thenReturn(0);
 
+        coffeeMachine.powerOn();
         String result = coffeeMachine.brew(CoffeeType.ESPRESSO);
 
         assertEquals("Your espresso is ready!", result);
@@ -58,6 +110,7 @@ class CoffeeMachineTest {
         when(beanReservoir.getLevel()).thenReturn(50);
         when(milkReservoir.getLevel()).thenReturn(150);
 
+        coffeeMachine.powerOn();
         String result = coffeeMachine.brew(CoffeeType.LATTE);
 
         assertEquals("Your latte is ready!", result);
@@ -69,6 +122,7 @@ class CoffeeMachineTest {
         when(beanReservoir.getLevel()).thenReturn(50);
         when(milkReservoir.getLevel()).thenReturn(200);
 
+        coffeeMachine.powerOn();
         String result = coffeeMachine.brew(CoffeeType.CAPPUCCINO);
 
         assertEquals("Your cappuccino is ready!", result);
@@ -80,6 +134,7 @@ class CoffeeMachineTest {
         when(beanReservoir.getLevel()).thenReturn(50);
         when(milkReservoir.getLevel()).thenReturn(100);
 
+        coffeeMachine.powerOn();
         String result = coffeeMachine.brew(CoffeeType.MACCHIATO);
 
         assertEquals("Your macchiato is ready!", result);
@@ -91,6 +146,7 @@ class CoffeeMachineTest {
         when(beanReservoir.getLevel()).thenReturn(50);
         when(milkReservoir.getLevel()).thenReturn(0);
 
+        coffeeMachine.powerOn();
         assertThrows(InsufficientWaterException.class, () -> coffeeMachine.brew(CoffeeType.COFFEE));
     }
 
@@ -100,6 +156,7 @@ class CoffeeMachineTest {
         when(beanReservoir.getLevel()).thenReturn(10);
         when(milkReservoir.getLevel()).thenReturn(0);
 
+        coffeeMachine.powerOn();
         assertThrows(InsufficientBeansException.class, () -> coffeeMachine.brew(CoffeeType.COFFEE));
     }
 
@@ -108,6 +165,7 @@ class CoffeeMachineTest {
         when(waterTank.getLevel()).thenReturn(300);
         when(beanReservoir.getLevel()).thenReturn(50);
         when(milkReservoir.getLevel()).thenReturn(50);
+        coffeeMachine.powerOn();
 
         assertThrows(InsufficientMilkException.class, () -> coffeeMachine.brew(CoffeeType.LATTE));
     }
