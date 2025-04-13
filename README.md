@@ -52,6 +52,11 @@ mvn jacoco:report
 ```
 - **View Report:** Open `target/site/jacoco/index.html` in a browser.
 
+### 4️⃣ Generate Code Coverage Report
+```sh
+mvn test-compile org.pitest:pitest-maven:mutationCoverage
+```
+- **View Report:** Open `target/pit-reports/index.html` in a browser.
 
 ## ☕ Coffee Menu
 The machine can brew the following **coffee types**, with predefined **water, bean, and milk requirements**:

@@ -39,6 +39,13 @@ class CoffeeMachineTest {
     }
 
     @Test
+    void testReservoir_UseExactAvailableAmount() {
+        BeanReservoir reservoir = new BeanReservoir(50);
+        reservoir.use(50); // This should succeed
+        assertEquals(0, reservoir.getLevel());
+    }
+
+    @Test
     void testBrewFailsWhenMachineIsOff() {
         when(waterTank.getLevel()).thenReturn(300);
         when(beanReservoir.getLevel()).thenReturn(50);
